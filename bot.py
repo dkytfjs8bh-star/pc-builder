@@ -11,7 +11,7 @@ from gigachat import GigaChat
 
 # --- КОНФИГУРАЦИЯ (токены вставлены) ---
 TELEGRAM_TOKEN = "8011928165:AAGMEjyJ93CLwI0g9zaxkjFnhu6L5Vly4Eo"
-GIGACHAT_AUTH = "MDE5ZDQwYjktYzczNC03YmIzLTg2OTItNWQyODZiZThkMWE5OmMxNmM2MDRjLTIzYTAtNDQxOS1iZjQ5LTA1NDk0MDIzM2JkZQ=="
+GIGACHAT_AUTH = "MDE5ZDQwYjktYzczNC03YmIzLTg2OTItNWQyODZiZThkMWE5OjI5OWE5MzdmLThkZGQtNDdmMS1iY2RjLTdiYjcwODgzZTJlNA=="
 
 # Подключаемся к GigaChat
 giga = GigaChat(
