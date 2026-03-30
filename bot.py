@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import os
+import requests
 from aiogram import Bot, Dispatcher, F
 from aiogram.filters import Command
 from aiogram.types import Message, CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
@@ -9,15 +10,18 @@ from aiogram.fsm.state import StatesGroup, State
 from aiogram.fsm.storage.memory import MemoryStorage
 from gigachat import GigaChat
 
-# --- КОНФИГУРАЦИЯ (токены вставлены) ---
+# --- КОНФИГУРАЦИЯ ---
 TELEGRAM_TOKEN = "8011928165:AAGMEjyJ93CLwI0g9zaxkjFnhu6L5Vly4Eo"
 GIGACHAT_AUTH = "MDE5ZDQwYjktYzczNC03YmIzLTg2OTItNWQyODZiZThkMWE5OjI5OWE5MzdmLThkZGQtNDdmMS1iY2RjLTdiYjcwODgzZTJlNA=="
+
+# Ссылка на файл с инструкцией на GitHub (RAW)
+INSTRUCTION_URL = "https://raw.githubusercontent.com/dkytfjs8bh-star/pc-builder/main/instruction.txt"
 
 # Подключаемся к GigaChat
 giga = GigaChat(
     credentials=GIGACHAT_AUTH,
-    scope="GIGACHAT_API_PERS",        # Для физических лиц (бесплатно)
-    verify_ssl_certs=False,            # Отключаем проверку сертификатов
+    scope="GIGACHAT_API_PERS",
+    verify_ssl_certs=False,
     timeout=60
 )
 
@@ -102,75 +106,19 @@ def get_back_to_main():
     buttons = [[InlineKeyboardButton(text="🏠 ГЛАВНОЕ МЕНЮ", callback_data="main_menu")]]
     return InlineKeyboardMarkup(inline_keyboard=buttons)
 
-# --- ИНСТРУКЦИЯ ПО СБОРКЕ (РАЗБИТА НА 2 ЧАСТИ) ---
-def get_instruction_part1() -> str:
-    return """📖 *КАК СОБРАТЬ КОМПЬЮТЕР САМОСТОЯТЕЛЬНО (ЧАСТЬ 1/2)*
+# --- ФУНКЦИЯ ПОЛУЧЕНИЯ ИНСТРУКЦИИ С GITHUB ---
+async def get_instruction_from_github() -> str:
+    """Скачивает инструкцию с GitHub"""
+    try:
+        response = requests.get(INSTRUCTION_URL, timeout=10)
+        if response.status_code == 200:
+            return response.text
+        else:
+            return "❌ Не удалось загрузить инструкцию. Попробуйте позже."
+    except Exception as e:
+        return f"❌ Ошибка загрузки: {e}"
 
-🔧 **ПОДГОТОВКА**
-• Купите все компоненты согласно сборке
-• Подготовьте стол, хорошее освещение
-• Заземлитесь (прикоснитесь к батарее)
-• Подготовьте крестовую отвертку
-
-🔩 **УСТАНОВКА ПРОЦЕССОРА**
-1. Откройте защелку на материнской плате
-2. Вставьте процессор (ориентир — золотой треугольник)
-3. Закройте защелку
-
-🔩 **УСТАНОВКА ОЗУ**
-1. Откройте защелки на слотах
-2. Вставьте планки до щелчка (слоты 2 и 4)
-
-🔩 **УСТАНОВКА КУЛЕРА**
-1. Нанесите термопасту (если не нанесена)
-2. Закрепите кулер на плате
-3. Подключите к CPU_FAN
-
-🔩 **МАТЕРИНСКАЯ ПЛАТА В КОРПУС**
-1. Вкрутите стойки в корпус
-2. Закрепите плату винтами
-
-🔩 **БЛОК ПИТАНИЯ**
-1. Закрепите БП в корпусе
-2. Проложите кабели через заднюю стенку
-
-➡️ *Продолжение в следующем сообщении*"""
-
-def get_instruction_part2() -> str:
-    return """📖 *КАК СОБРАТЬ КОМПЬЮТЕР (ЧАСТЬ 2/2)*
-
-🔩 **УСТАНОВКА SSD**
-• M.2 SSD: вставьте под углом, закрепите винтом
-• SATA SSD: закрепите, подключите кабель и питание
-
-🔩 **ВИДЕОКАРТА**
-1. Выломайте заглушки на корпусе (2 шт)
-2. Откройте защелку на PCI-E слоте
-3. Вставьте карту до щелчка
-4. Закрепите винтами
-5. Подключите питание (6 или 8 pin)
-
-🔩 **ПОДКЛЮЧЕНИЕ ПРОВОДОВ**
-• 24 pin — питание материнской платы
-• 4/8 pin — питание процессора
-• Передняя панель: Power SW, Reset SW, HDD LED, Power LED
-• USB 3.0, USB 2.0, аудио
-
-🔩 **КАБЕЛЬ-МЕНЕДЖМЕНТ**
-• Соберите провода сзади
-• Затяните стяжками
-
-💻 **ПЕРВЫЙ ЗАПУСК**
-1. Включите БП тумблером (I)
-2. Нажмите кнопку включения
-3. Установите Windows с флешки
-4. Установите драйвера
-
-⚠️ *Если не включается:* проверьте БП, кнопку Power SW, кабели питания
-
-💡 *Совет:* при неуверенности — обратитесь в сервисный центр (2000-3000₽)"""
-
-# --- ГЕНЕРАЦИЯ СБОРКИ ЧЕРЕЗ GIGACHAT ---
+# --- ГЕНЕРАЦИЯ СБОРКИ ---
 async def generate_pc_build(data: dict) -> str:
     purpose_names = {
         "games": "игр",
@@ -211,30 +159,7 @@ async def generate_pc_build(data: dict) -> str:
 4. БЮДЖЕТ: {budget_names.get(data.get('budget', ''), 'любой')} рублей
 5. ПРЕДПОЧТЕНИЯ: {data.get('preferences', 'нет предпочтений')}
 
-Твоя задача:
-- Предложить оптимальную сборку ПК
-- Все компоненты должны быть совместимы
-- Указать примерные цены в рублях (актуальные на 2026 год)
-- Дать краткое обоснование каждого выбора
-
-Формат ответа (используй эмодзи):
-
-🎯 **СБОРКА ПК**
-
-🔹 **Процессор:** [модель] — [почему этот выбор]
-🔹 **Видеокарта:** [модель] — [почему этот выбор]
-🔹 **Материнская плата:** [модель] — [почему этот выбор]
-🔹 **Оперативная память:** [объем и тип] — [почему]
-🔹 **SSD:** [объем и тип] — [почему]
-🔹 **Блок питания:** [мощность и сертификат] — [почему]
-🔹 **Система охлаждения:** [тип] — [почему]
-🔹 **Корпус:** [модель/тип] — [почему]
-
-💰 **ОРИЕНТИРОВОЧНАЯ СТОИМОСТЬ:** [сумма] рублей
-
-💡 **СОВЕТ:** [один важный совет по сборке или оптимизации]
-
-⚠️ *Цены примерные, могут отличаться в зависимости от региона и магазина.*
+Дай сборку с комплектующими и ценами. Формат с эмодзи.
 """
     
     try:
@@ -242,7 +167,7 @@ async def generate_pc_build(data: dict) -> str:
         return response.choices[0].message.content
     except Exception as e:
         logging.error(f"GigaChat error: {e}")
-        return f"❌ Ошибка при генерации сборки: {e}\n\nПроверь интернет или попробуй позже."
+        return f"❌ Ошибка: {e}"
 
 # --- ОБРАБОТЧИКИ ---
 @dp.message(Command("start"))
@@ -251,9 +176,9 @@ async def start(message: Message, state: FSMContext):
     await message.answer(
         "🖥️ *ДОБРО ПОЖАЛОВАТЬ В PC BUILDER BOT!*\n\n"
         "Я использую GigaChat от Сбера для подбора сборок ПК.\n\n"
-        "🔹 *ПОШАГОВАЯ СБОРКА* — я задам 5 вопросов и подберу конфигурацию\n"
-        "🔹 *БЫСТРАЯ СБОРКА* — просто опишите свой запрос\n"
-        "🔹 *ИНСТРУКЦИЯ ПО СБОРКЕ* — пошаговое руководство как собрать ПК\n\n"
+        "🔹 *ПОШАГОВАЯ СБОРКА* — я задам 5 вопросов\n"
+        "🔹 *БЫСТРАЯ СБОРКА* — опишите свой запрос\n"
+        "🔹 *ИНСТРУКЦИЯ ПО СБОРКЕ* — как собрать ПК\n\n"
         "Выберите режим:",
         reply_markup=get_main_keyboard(),
         parse_mode="Markdown"
@@ -276,11 +201,7 @@ async def step_start(callback: CallbackQuery, state: FSMContext):
 async def quick(callback: CallbackQuery, state: FSMContext):
     await callback.message.answer(
         "🚀 *БЫСТРАЯ СБОРКА*\n\n"
-        "Опишите, какой компьютер вам нужен.\n\n"
-        "Примеры:\n"
-        "• «Игровой ПК для Cyberpunk 2077, бюджет 100 000 рублей»\n"
-        "• «Компьютер для монтажа видео в Premiere Pro, до 150 000»\n\n"
-        "Напишите свой запрос:",
+        "Напишите свой запрос (например: 'Игровой ПК за 100к для Cyberpunk')",
         parse_mode="Markdown"
     )
     await state.set_state(BuildSteps.waiting_for_purpose)
@@ -288,22 +209,13 @@ async def quick(callback: CallbackQuery, state: FSMContext):
 
 @dp.callback_query(F.data == "instruction")
 async def instruction(callback: CallbackQuery):
-    """Отправляет инструкцию по сборке ПК (двумя сообщениями)"""
+    """Отправляет инструкцию из файла на GitHub"""
+    await callback.message.answer("📖 *Загружаю инструкцию...*", parse_mode="Markdown")
+    
+    instruction_text = await get_instruction_from_github()
+    
     await callback.message.answer(
-        get_instruction_part1(),
-        parse_mode="Markdown"
-    )
-    await asyncio.sleep(0.5)  # небольшая пауза между сообщениями
-    await callback.message.answer(
-        get_instruction_part2(),
-        parse_mode="Markdown"
-    )
-    await callback.message.answer(
-        "🔧 **БОНУС:** Полезные видео — наберите 'сборка ПК' на YouTube\n\n"
-        "📹 *Рекомендуемые каналы:*\n"
-        "• Ремонтяш\n"
-        "• PRO Hi-Tech\n"
-        "• DROID News",
+        instruction_text,
         reply_markup=get_back_to_main(),
         parse_mode="Markdown"
     )
@@ -313,13 +225,7 @@ async def instruction(callback: CallbackQuery):
 async def step_purpose(callback: CallbackQuery, state: FSMContext):
     purpose = callback.data.split("_")[1]
     await state.update_data(purpose=purpose)
-    
-    await callback.message.answer(
-        "**Вопрос 2 из 5:**\n"
-        "В какие игры планируете играть?",
-        reply_markup=get_games_keyboard(),
-        parse_mode="Markdown"
-    )
+    await callback.message.answer("Вопрос 2: В какие игры?", reply_markup=get_games_keyboard())
     await state.set_state(BuildSteps.waiting_for_games)
     await callback.answer()
 
@@ -327,13 +233,7 @@ async def step_purpose(callback: CallbackQuery, state: FSMContext):
 async def step_games(callback: CallbackQuery, state: FSMContext):
     games = callback.data.split("_")[1]
     await state.update_data(games=games)
-    
-    await callback.message.answer(
-        "**Вопрос 3 из 5:**\n"
-        "Какие программы будете использовать?",
-        reply_markup=get_programs_keyboard(),
-        parse_mode="Markdown"
-    )
+    await callback.message.answer("Вопрос 3: Какие программы?", reply_markup=get_programs_keyboard())
     await state.set_state(BuildSteps.waiting_for_programs)
     await callback.answer()
 
@@ -341,13 +241,7 @@ async def step_games(callback: CallbackQuery, state: FSMContext):
 async def step_programs(callback: CallbackQuery, state: FSMContext):
     programs = callback.data.split("_")[1]
     await state.update_data(programs=programs)
-    
-    await callback.message.answer(
-        "**Вопрос 4 из 5:**\n"
-        "Какой у вас бюджет?",
-        reply_markup=get_budget_keyboard(),
-        parse_mode="Markdown"
-    )
+    await callback.message.answer("Вопрос 4: Какой бюджет?", reply_markup=get_budget_keyboard())
     await state.set_state(BuildSteps.waiting_for_budget)
     await callback.answer()
 
@@ -355,14 +249,7 @@ async def step_programs(callback: CallbackQuery, state: FSMContext):
 async def step_budget(callback: CallbackQuery, state: FSMContext):
     budget = callback.data.split("_")[1]
     await state.update_data(budget=budget)
-    
-    await callback.message.answer(
-        "**Вопрос 5 из 5:**\n"
-        "Есть ли предпочтения по производителям?\n"
-        "(можно выбрать 'нет предпочтений')",
-        reply_markup=get_preferences_keyboard(),
-        parse_mode="Markdown"
-    )
+    await callback.message.answer("Вопрос 5: Предпочтения?", reply_markup=get_preferences_keyboard())
     await state.set_state(BuildSteps.waiting_for_preferences)
     await callback.answer()
 
@@ -370,46 +257,19 @@ async def step_budget(callback: CallbackQuery, state: FSMContext):
 async def step_preferences(callback: CallbackQuery, state: FSMContext):
     preferences = callback.data.split("_")[1]
     await state.update_data(preferences=preferences)
-    
     data = await state.get_data()
-    
-    summary = (
-        "📋 *Вот что вы выбрали:*\n\n"
-        f"🎯 Назначение: {data.get('purpose', '-')}\n"
-        f"🎮 Игры: {data.get('games', '-')}\n"
-        f"💻 Программы: {data.get('programs', '-')}\n"
-        f"💰 Бюджет: {data.get('budget', '-')}\n"
-        f"⚙️ Предпочтения: {data.get('preferences', '-')}\n\n"
-        "✅ Всё верно? Могу собрать ПК под эти параметры."
-    )
-    
-    await callback.message.answer(
-        summary,
-        reply_markup=get_confirm_keyboard(),
-        parse_mode="Markdown"
-    )
+    text = f"✅ Всё верно?\n\n🎯 {data.get('purpose')}\n🎮 {data.get('games')}\n💻 {data.get('programs')}\n💰 {data.get('budget')}\n⚙️ {data.get('preferences')}"
+    await callback.message.answer(text, reply_markup=get_confirm_keyboard())
     await state.set_state(BuildSteps.waiting_for_confirmation)
     await callback.answer()
 
 @dp.callback_query(F.data == "confirm_yes")
 async def confirm(callback: CallbackQuery, state: FSMContext):
     data = await state.get_data()
-    
-    loading_msg = await callback.message.answer(
-        "🤖 *Анализирую и подбираю оптимальную конфигурацию...*\n\n"
-        "⏳ Обычно это занимает 15-30 секунд...",
-        parse_mode="Markdown"
-    )
-    
+    msg = await callback.message.answer("🤔 Думаю...")
     build = await generate_pc_build(data)
-    
-    await loading_msg.delete()
-    await callback.message.answer(
-        build,
-        reply_markup=get_back_to_main(),
-        parse_mode="Markdown"
-    )
-    
+    await msg.delete()
+    await callback.message.answer(build, reply_markup=get_back_to_main())
     await state.clear()
     await callback.answer()
 
@@ -420,11 +280,7 @@ async def restart(callback: CallbackQuery, state: FSMContext):
 @dp.callback_query(F.data == "main_menu")
 async def menu(callback: CallbackQuery, state: FSMContext):
     await state.clear()
-    await callback.message.answer(
-        "🖥️ *ГЛАВНОЕ МЕНЮ*\n\nВыберите режим:",
-        reply_markup=get_main_keyboard(),
-        parse_mode="Markdown"
-    )
+    await callback.message.answer("🖥️ Главное меню:", reply_markup=get_main_keyboard())
     await callback.message.delete()
     await callback.answer()
 
@@ -441,8 +297,6 @@ async def quick_process(message: Message, state: FSMContext):
 async def main():
     print("🤖 PC BUILDER БОТ ЗАПУЩЕН!")
     print("✅ Используется GigaChat")
-    print("✅ Telegram токен: 8011928165...")
-    print("✅ GigaChat ключ: MDE5ZDQwYjkt...")
     await dp.start_polling(bot)
 
 if __name__ == "__main__":
