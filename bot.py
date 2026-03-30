@@ -42,6 +42,7 @@ def get_main_keyboard():
     buttons = [
         [InlineKeyboardButton(text="🛠️ ПОШАГОВАЯ СБОРКА", callback_data="step_build")],
         [InlineKeyboardButton(text="🚀 БЫСТРАЯ СБОРКА", callback_data="quick_build")],
+        [InlineKeyboardButton(text="📖 ИНСТРУКЦИЯ ПО СБОРКЕ", callback_data="instruction")],
     ]
     return InlineKeyboardMarkup(inline_keyboard=buttons)
 
@@ -100,6 +101,77 @@ def get_confirm_keyboard():
 def get_back_to_main():
     buttons = [[InlineKeyboardButton(text="🏠 ГЛАВНОЕ МЕНЮ", callback_data="main_menu")]]
     return InlineKeyboardMarkup(inline_keyboard=buttons)
+
+# --- ФУНКЦИЯ ИНСТРУКЦИИ ---
+def get_instruction() -> str:
+    return """📖 *КАК СОБРАТЬ КОМПЬЮТЕР САМОСТОЯТЕЛЬНО*
+
+🔧 **ПОДГОТОВКА**
+1. Купите все компоненты согласно сборке
+2. Подготовьте рабочее место: чистый стол, хорошее освещение
+3. Заземлитесь (прикоснитесь к батарее) чтобы не побить статикой компоненты
+4. Подготовьте крестовую отвертку
+
+🔩 **ПОШАГОВАЯ СБОРКА**
+
+**Шаг 1: Установка процессора**
+- Откройте защелку на материнской плате
+- Аккуратно вставьте процессор (ориентируйтесь по золотому треугольнику)
+- Закройте защелку
+
+**Шаг 2: Установка оперативной памяти**
+- Откройте защелки на слотах ОЗУ
+- Вставьте планки до щелчка (обычно слоты 2 и 4)
+
+**Шаг 3: Установка кулера**
+- Нанесите тонкий слой термопасты (если не нанесена)
+- Закрепите кулер на материнской плате
+- Подключите провод кулера к разъему CPU_FAN
+
+**Шаг 4: Установка материнской платы в корпус**
+- Вкрутите стойки в корпус под размер платы
+- Закрепите плату винтами
+
+**Шаг 5: Установка блока питания**
+- Закрепите БП в корпусе (обычно снизу или сверху)
+- Проложите кабели через заднюю стенку
+
+**Шаг 6: Установка накопителя (SSD)**
+- M.2 SSD: вставьте в слот под углом, прижмите и закрепите винтом
+- SATA SSD: закрепите в отсеке, подключите кабель SATA и питание
+
+**Шаг 7: Установка видеокарты**
+- Выломайте заглушки на корпусе (обычно 2 шт)
+- Откройте защелку на PCI-E слоте
+- Вставьте видеокарту до щелчка
+- Закрепите винтами сбоку корпуса
+- Подключите питание от БП (6 или 8 pin)
+
+**Шаг 8: Подключение проводов**
+- 24 pin — основное питание материнской платы
+- 4/8 pin — питание процессора (вверху платы)
+- Кабели передней панели: Power SW, Reset SW, HDD LED, Power LED (по схеме на материнской плате)
+- USB 3.0, USB 2.0, аудио
+
+**Шаг 9: Кабель-менеджмент**
+- Соберите все провода сзади
+- Затяните стяжками, чтобы не мешали потоку воздуха
+
+💻 **ПЕРВЫЙ ЗАПУСК**
+1. Подключите кабель питания к БП
+2. Включите блок питания тумблером (I — включено)
+3. Нажмите кнопку включения на корпусе
+4. Если всё работает — установите Windows через флешку
+5. Установите драйвера (видеокарта, чипсет, звук)
+
+⚠️ *Если компьютер не включается:*
+- Проверьте что БП включен тумблером
+- Проверьте что кнопка Power SW подключена правильно
+- Проверьте что все кабели питания защелкнулись
+
+📹 *Полезные видео:* "Сборка ПК своими руками" на YouTube
+
+💡 *Совет:* Если не уверены в своих силах — обратитесь в сервисный центр, сборка стоит около 2000-3000 рублей."""
 
 # --- ГЕНЕРАЦИЯ СБОРКИ ЧЕРЕЗ GIGACHAT ---
 async def generate_pc_build(data: dict) -> str:
@@ -183,7 +255,8 @@ async def start(message: Message, state: FSMContext):
         "🖥️ *ДОБРО ПОЖАЛОВАТЬ В PC BUILDER BOT!*\n\n"
         "Я использую GigaChat от Сбера для подбора сборок ПК.\n\n"
         "🔹 *ПОШАГОВАЯ СБОРКА* — я задам 5 вопросов и подберу конфигурацию\n"
-        "🔹 *БЫСТРАЯ СБОРКА* — просто опишите свой запрос\n\n"
+        "🔹 *БЫСТРАЯ СБОРКА* — просто опишите свой запрос\n"
+        "🔹 *ИНСТРУКЦИЯ ПО СБОРКЕ* — пошаговое руководство как собрать ПК\n\n"
         "Выберите режим:",
         reply_markup=get_main_keyboard(),
         parse_mode="Markdown"
@@ -200,6 +273,30 @@ async def step_start(callback: CallbackQuery, state: FSMContext):
         parse_mode="Markdown"
     )
     await state.set_state(BuildSteps.waiting_for_purpose)
+    await callback.answer()
+
+@dp.callback_query(F.data == "quick_build")
+async def quick(callback: CallbackQuery, state: FSMContext):
+    await callback.message.answer(
+        "🚀 *БЫСТРАЯ СБОРКА*\n\n"
+        "Опишите, какой компьютер вам нужен.\n\n"
+        "Примеры:\n"
+        "• «Игровой ПК для Cyberpunk 2077, бюджет 100 000 рублей»\n"
+        "• «Компьютер для монтажа видео в Premiere Pro, до 150 000»\n\n"
+        "Напишите свой запрос:",
+        parse_mode="Markdown"
+    )
+    await state.set_state(BuildSteps.waiting_for_purpose)
+    await callback.answer()
+
+@dp.callback_query(F.data == "instruction")
+async def instruction(callback: CallbackQuery):
+    """Отправляет инструкцию по сборке ПК"""
+    await callback.message.answer(
+        get_instruction(),
+        reply_markup=get_back_to_main(),
+        parse_mode="Markdown"
+    )
     await callback.answer()
 
 @dp.callback_query(BuildSteps.waiting_for_purpose, F.data.startswith("purpose_"))
@@ -309,20 +406,6 @@ async def confirm(callback: CallbackQuery, state: FSMContext):
 @dp.callback_query(F.data == "confirm_restart")
 async def restart(callback: CallbackQuery, state: FSMContext):
     await step_start(callback, state)
-
-@dp.callback_query(F.data == "quick_build")
-async def quick(callback: CallbackQuery, state: FSMContext):
-    await callback.message.answer(
-        "🚀 *БЫСТРАЯ СБОРКА*\n\n"
-        "Опишите, какой компьютер вам нужен.\n\n"
-        "Примеры:\n"
-        "• «Игровой ПК для Cyberpunk 2077, бюджет 100 000 рублей»\n"
-        "• «Компьютер для монтажа видео в Premiere Pro, до 150 000»\n\n"
-        "Напишите свой запрос:",
-        parse_mode="Markdown"
-    )
-    await state.set_state(BuildSteps.waiting_for_purpose)
-    await callback.answer()
 
 @dp.callback_query(F.data == "main_menu")
 async def menu(callback: CallbackQuery, state: FSMContext):
