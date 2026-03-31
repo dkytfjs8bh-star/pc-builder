@@ -1,7 +1,6 @@
 import asyncio
 import logging
 import re
-import requests
 from aiogram import Bot, Dispatcher, F
 from aiogram.filters import Command
 from aiogram.types import Message, CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
@@ -343,7 +342,33 @@ async def generate_pc_build(data: dict) -> str:
         "office": "офисные программы (Word, Excel, браузер) — требования минимальны"
     }
     
-    prompt = f"""
+    # Для быстрой сборки (текстовый запрос)
+    if data.get('purpose') == 'quick':
+        prompt = f"""
+Ты — профессиональный конфигуратор ПК. Пользователь хочет собрать компьютер.
+
+ЗАПРОС ПОЛЬЗОВАТЕЛЯ: {data.get('quick_request', '')}
+
+Подбери оптимальную сборку ПК под этот запрос. Укажи все компоненты с примерными ценами в рублях.
+Формат ответа:
+
+🎯 **СБОРКА ПК**
+
+🔹 **Процессор:** [модель] — [цена] ₽
+🔹 **Видеокарта:** [модель] — [цена] ₽
+🔹 **Материнская плата:** [модель] — [цена] ₽
+🔹 **Оперативная память:** [объем] — [цена] ₽
+🔹 **SSD:** [объем] — [цена] ₽
+🔹 **Блок питания:** [мощность] — [цена] ₽
+🔹 **Система охлаждения:** [тип] — [цена] ₽
+🔹 **Корпус:** [модель] — [цена] ₽
+
+💰 **ИТОГОВАЯ ЦЕНА:** [сумма] ₽
+
+💡 **СОВЕТ:** [важный совет]
+"""
+    else:
+        prompt = f"""
 Ты — профессиональный конфигуратор ПК. Твоя задача — подобрать сборку строго в рамках указанного бюджета.
 
 ПАРАМЕТРЫ ПОЛЬЗОВАТЕЛЯ:
@@ -382,17 +407,18 @@ async def generate_pc_build(data: dict) -> str:
         response = giga.chat(prompt)
         result = response.choices[0].message.content
         
-        # Проверяем, что цена в ответе не превышает бюджет
-        price_match = re.search(r'ИТОГОВАЯ ЦЕНА.*?(\d[\d\s]*)\s*руб', result)
-        if price_match:
-            price_str = price_match.group(1).replace(' ', '').replace('₽', '').replace('руб', '')
-            try:
-                price = int(price_str)
-                if price > budget_limit and budget_limit < 9999999:
-                    # Если цена превышает бюджет — используем готовую сборку
-                    return get_fallback_build(data)
-            except:
-                pass
+        # Проверяем, что цена в ответе не превышает бюджет (только для пошаговой сборки)
+        if data.get('purpose') != 'quick':
+            price_match = re.search(r'ИТОГОВАЯ ЦЕНА.*?(\d[\d\s]*)\s*руб', result)
+            if price_match:
+                price_str = price_match.group(1).replace(' ', '').replace('₽', '').replace('руб', '')
+                try:
+                    price = int(price_str)
+                    if price > budget_limit and budget_limit < 9999999:
+                        # Если цена превышает бюджет — используем готовую сборку
+                        return get_fallback_build(data)
+                except:
+                    pass
         
         return result
         
@@ -577,15 +603,14 @@ async def quick_process(message: Message, state: FSMContext):
     data = {"purpose": "quick", "quick_request": message.text}
     build = await generate_pc_build(data)
     await msg.delete()
-    await message.answer(build, reply_markup=get_back_to_main())
+    await message.answer(build, reply_markup=get_back_to_main(), parse_mode="Markdown")
     await state.clear()
 
 # --- ЗАПУСК ---
 async def main():
     print("🤖 PC BUILDER БОТ ЗАПУЩЕН!")
     print("✅ Используется GigaChat")
-    print("✅ Telegram токен: 8011928165...")
-    print("✅ GigaChat ключ: MDE5ZDQwYjkt...")
+    print("✅ Инструкция встроена в код (без загрузки с GitHub)")
     await dp.start_polling(bot)
 
 if __name__ == "__main__":
