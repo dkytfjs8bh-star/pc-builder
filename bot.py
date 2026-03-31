@@ -35,12 +35,14 @@ class BuildSteps(StatesGroup):
     waiting_for_budget = State()
     waiting_for_preferences = State()
     waiting_for_confirmation = State()
+    waiting_for_compatibility = State()  # Новое состояние для проверки совместимости
 
 # --- КЛАВИАТУРЫ ---
 def get_main_keyboard():
     buttons = [
         [InlineKeyboardButton(text="🛠️ ПОШАГОВАЯ СБОРКА", callback_data="step_build")],
         [InlineKeyboardButton(text="🚀 БЫСТРАЯ СБОРКА", callback_data="quick_build")],
+        [InlineKeyboardButton(text="🔍 ПРОВЕРКА СОВМЕСТИМОСТИ", callback_data="check_compatibility")],
         [InlineKeyboardButton(text="📖 ИНСТРУКЦИЯ", callback_data="instruction")],
     ]
     return InlineKeyboardMarkup(inline_keyboard=buttons)
@@ -101,7 +103,14 @@ def get_back_to_main():
     buttons = [[InlineKeyboardButton(text="🏠 ГЛАВНОЕ МЕНЮ", callback_data="main_menu")]]
     return InlineKeyboardMarkup(inline_keyboard=buttons)
 
-# --- ИНСТРУКЦИЯ (ПРОСТОЙ ТЕКСТ, БЕЗ MARKDOWN) ---
+def get_compatibility_keyboard():
+    buttons = [
+        [InlineKeyboardButton(text="🔄 ПРОВЕРИТЬ ДРУГУЮ СВЯЗКУ", callback_data="check_compatibility")],
+        [InlineKeyboardButton(text="🏠 ГЛАВНОЕ МЕНЮ", callback_data="main_menu")],
+    ]
+    return InlineKeyboardMarkup(inline_keyboard=buttons)
+
+# --- ИНСТРУКЦИЯ ---
 INSTRUCTION = """
 📖 КАК СОБРАТЬ ПК САМОСТОЯТЕЛЬНО
 
@@ -129,6 +138,35 @@ INSTRUCTION = """
 
 💡 Совет: посмотри видео "сборка ПК" на YouTube
 """
+
+# --- ФУНКЦИЯ ПРОВЕРКИ СОВМЕСТИМОСТИ ---
+async def check_compatibility(cpu: str, gpu: str) -> str:
+    """Проверяет совместимость процессора и видеокарты через GigaChat"""
+    
+    prompt = f"""
+Ты — эксперт по компьютерному железу. Проверь совместимость следующих компонентов:
+
+Процессор: {cpu}
+Видеокарта: {gpu}
+
+Ответь в формате:
+🔍 РЕЗУЛЬТАТ ПРОВЕРКИ: [СОВМЕСТИМЫ / НЕ СОВМЕСТИМЫ / ЕСТЬ НЮАНСЫ]
+
+📋 ПОЯСНЕНИЕ:
+[Краткое объяснение, почему они совместимы или нет]
+
+⚠️ БУТЫЛОЧНОЕ ГОРЛЫШКО:
+[Если есть узкое место — какой компонент будет тормозить]
+
+💡 СОВЕТ:
+[Что лучше выбрать для оптимальной работы]
+"""
+    
+    try:
+        response = giga.chat(prompt)
+        return response.choices[0].message.content
+    except Exception as e:
+        return f"❌ Ошибка проверки: {e}\n\nПопробуй переформулировать названия компонентов."
 
 # --- FALLBACK СБОРКИ ---
 def get_fallback_build(budget: str) -> str:
@@ -245,6 +283,7 @@ async def start(message: Message, state: FSMContext):
         "🖥️ ДОБРО ПОЖАЛОВАТЬ В PC BUILDER BOT!\n\n"
         "🔹 ПОШАГОВАЯ СБОРКА — я задам 5 вопросов\n"
         "🔹 БЫСТРАЯ СБОРКА — опишите свой запрос\n"
+        "🔹 ПРОВЕРКА СОВМЕСТИМОСТИ — проверю связку процессор + видеокарта\n"
         "🔹 ИНСТРУКЦИЯ — как собрать ПК\n\n"
         "Выберите режим:",
         reply_markup=get_main_keyboard()
@@ -261,6 +300,19 @@ async def step_start(callback: CallbackQuery, state: FSMContext):
 async def quick(callback: CallbackQuery, state: FSMContext):
     await callback.message.answer("🚀 Напишите свой запрос (например: 'Игровой ПК за 100к для Cyberpunk')")
     await state.set_state(BuildSteps.waiting_for_purpose)
+    await callback.answer()
+
+@dp.callback_query(F.data == "check_compatibility")
+async def check_compatibility_start(callback: CallbackQuery, state: FSMContext):
+    await callback.message.answer(
+        "🔍 ПРОВЕРКА СОВМЕСТИМОСТИ\n\n"
+        "Напишите связку процессор + видеокарта в формате:\n\n"
+        "Пример 1: Intel i5-12400F и RTX 3060\n"
+        "Пример 2: Ryzen 5 5600 и RX 6600 XT\n"
+        "Пример 3: Intel i7-13700K и RTX 4070 Ti\n\n"
+        "Введите компоненты:"
+    )
+    await state.set_state(BuildSteps.waiting_for_compatibility)
     await callback.answer()
 
 @dp.callback_query(F.data == "instruction")
@@ -335,10 +387,24 @@ async def quick_process(message: Message, state: FSMContext):
     await message.answer(build, reply_markup=get_back_to_main())
     await state.clear()
 
+@dp.message(BuildSteps.waiting_for_compatibility)
+async def compatibility_process(message: Message, state: FSMContext):
+    """Обработка запроса на проверку совместимости"""
+    components = message.text
+    
+    msg = await message.answer("🔍 Проверяю совместимость... (15-20 секунд)")
+    
+    result = await check_compatibility(components, "")
+    
+    await msg.delete()
+    await message.answer(result, reply_markup=get_compatibility_keyboard())
+    await state.clear()
+
 # --- ЗАПУСК ---
 async def main():
     print("🤖 PC BUILDER БОТ ЗАПУЩЕН!")
     print("✅ Используется GigaChat")
+    print("✅ Доступные функции: сборка ПК + проверка совместимости")
     await dp.start_polling(bot)
 
 if __name__ == "__main__":
