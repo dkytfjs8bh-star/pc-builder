@@ -1,4 +1,3 @@
-import asyncio
 import logging
 import os
 import re
@@ -97,7 +96,7 @@ def get_preferences_keyboard():
     return InlineKeyboardMarkup(inline_keyboard=buttons)
 
 def get_confirm_keyboard():
-    buttons = [
+buttons = [
         [InlineKeyboardButton(text="✅ ДА, СОБИРАЙ!", callback_data="confirm_yes")],
         [InlineKeyboardButton(text="🔄 НАЧАТЬ ЗАНОВО", callback_data="confirm_restart")],
     ]
@@ -217,7 +216,7 @@ def get_fallback_build(data: dict) -> str:
 💡 **Совет:** Хорош для Premiere, After Effects, Blender"""
         
         else:
-            return """🎬 **ПК ДЛЯ МОНТАЖА (100 000+ ₽)**
+return """🎬 **ПК ДЛЯ МОНТАЖА (100 000+ ₽)**
 
 🔹 **Процессор:** Intel Core i7-13700K — 35 000 ₽
 🔹 **Видеокарта:** RTX 4070 12GB — 65 000 ₽
@@ -432,7 +431,7 @@ async def step_games(callback: CallbackQuery, state: FSMContext):
     await callback.message.answer(
         "**Вопрос 3 из 5:**\n"
         "Какие программы будете использовать?",
-        reply_markup=get_programs_keyboard(),
+reply_markup=get_programs_keyboard(),
         parse_mode="Markdown"
     )
     await state.set_state(BuildSteps.waiting_for_programs)
