@@ -28,8 +28,8 @@ dp = Dispatcher(storage=storage)
 
 logging.basicConfig(level=logging.INFO)
 
-# --- ВСТРОЕННАЯ ИНСТРУКЦИЯ ---
-INSTRUCTION_TEXT = """📖 **КАК СОБРАТЬ КОМПЬЮТЕР САМОСТОЯТЕЛЬНО**
+# --- ВСТРОЕННАЯ ИНСТРУКЦИЯ (РАЗБИТА НА ЧАСТИ) ---
+INSTRUCTION_PART1 = """📖 **КАК СОБРАТЬ КОМПЬЮТЕР САМОСТОЯТЕЛЬНО (часть 1/3)**
 
 🔧 **ПОДГОТОВКА**
 • Купите все компоненты согласно сборке
@@ -49,7 +49,9 @@ INSTRUCTION_TEXT = """📖 **КАК СОБРАТЬ КОМПЬЮТЕР САМОС
 🔩 **УСТАНОВКА КУЛЕРА**
 1. Нанесите термопасту (если не нанесена)
 2. Закрепите кулер на плате
-3. Подключите к CPU_FAN
+3. Подключите к CPU_FAN"""
+
+INSTRUCTION_PART2 = """📖 **КАК СОБРАТЬ КОМПЬЮТЕР САМОСТОЯТЕЛЬНО (часть 2/3)**
 
 🔩 **МАТЕРИНСКАЯ ПЛАТА В КОРПУС**
 1. Вкрутите стойки в корпус
@@ -68,7 +70,9 @@ INSTRUCTION_TEXT = """📖 **КАК СОБРАТЬ КОМПЬЮТЕР САМОС
 2. Откройте защелку на PCI-E слоте
 3. Вставьте карту до щелчка
 4. Закрепите винтами
-5. Подключите питание (6 или 8 pin)
+5. Подключите питание (6 или 8 pin)"""
+
+INSTRUCTION_PART3 = """📖 **КАК СОБРАТЬ КОМПЬЮТЕР САМОСТОЯТЕЛЬНО (часть 3/3)**
 
 🔩 **ПОДКЛЮЧЕНИЕ ПРОВОДОВ**
 • 24 pin — питание материнской платы
@@ -106,6 +110,22 @@ def get_main_keyboard():
         [InlineKeyboardButton(text="🚀 БЫСТРАЯ СБОРКА", callback_data="quick_build")],
         [InlineKeyboardButton(text="📖 ИНСТРУКЦИЯ ПО СБОРКЕ", callback_data="instruction")],
     ]
+    return InlineKeyboardMarkup(inline_keyboard=buttons)
+
+def get_instruction_keyboard(part: int):
+    """Клавиатура для навигации по инструкции"""
+    buttons = []
+    
+    if part == 1:
+        buttons.append([InlineKeyboardButton(text="➡️ ДАЛЕЕ (часть 2)", callback_data="instruction_part2")])
+    elif part == 2:
+        buttons.append([InlineKeyboardButton(text="⬅️ НАЗАД (часть 1)", callback_data="instruction_part1")])
+        buttons.append([InlineKeyboardButton(text="➡️ ДАЛЕЕ (часть 3)", callback_data="instruction_part3")])
+    elif part == 3:
+        buttons.append([InlineKeyboardButton(text="⬅️ НАЗАД (часть 2)", callback_data="instruction_part2")])
+    
+    buttons.append([InlineKeyboardButton(text="🏠 ГЛАВНОЕ МЕНЮ", callback_data="main_menu")])
+    
     return InlineKeyboardMarkup(inline_keyboard=buttons)
 
 def get_purpose_keyboard():
@@ -469,11 +489,41 @@ async def quick(callback: CallbackQuery, state: FSMContext):
     await callback.answer()
 
 @dp.callback_query(F.data == "instruction")
-async def instruction(callback: CallbackQuery):
-    """Отправляет встроенную инструкцию"""
+async def instruction_start(callback: CallbackQuery):
+    """Начало инструкции - часть 1"""
     await callback.message.answer(
-        INSTRUCTION_TEXT,
-        reply_markup=get_back_to_main(),
+        INSTRUCTION_PART1,
+        reply_markup=get_instruction_keyboard(1),
+        parse_mode="Markdown"
+    )
+    await callback.answer()
+
+@dp.callback_query(F.data == "instruction_part1")
+async def instruction_part1(callback: CallbackQuery):
+    """Показать часть 1 инструкции"""
+    await callback.message.edit_text(
+        INSTRUCTION_PART1,
+        reply_markup=get_instruction_keyboard(1),
+        parse_mode="Markdown"
+    )
+    await callback.answer()
+
+@dp.callback_query(F.data == "instruction_part2")
+async def instruction_part2(callback: CallbackQuery):
+    """Показать часть 2 инструкции"""
+    await callback.message.edit_text(
+        INSTRUCTION_PART2,
+        reply_markup=get_instruction_keyboard(2),
+        parse_mode="Markdown"
+    )
+    await callback.answer()
+
+@dp.callback_query(F.data == "instruction_part3")
+async def instruction_part3(callback: CallbackQuery):
+    """Показать часть 3 инструкции"""
+    await callback.message.edit_text(
+        INSTRUCTION_PART3,
+        reply_markup=get_instruction_keyboard(3),
         parse_mode="Markdown"
     )
     await callback.answer()
@@ -610,8 +660,4 @@ async def quick_process(message: Message, state: FSMContext):
 async def main():
     print("🤖 PC BUILDER БОТ ЗАПУЩЕН!")
     print("✅ Используется GigaChat")
-    print("✅ Инструкция встроена в код (без загрузки с GitHub)")
-    await dp.start_polling(bot)
-
-if __name__ == "__main__":
-    asyncio.run(main())
+   
