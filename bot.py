@@ -1,6 +1,5 @@
 import asyncio
 import logging
-import os
 import re
 import requests
 from aiogram import Bot, Dispatcher, F
@@ -14,9 +13,6 @@ from gigachat import GigaChat
 # --- КОНФИГУРАЦИЯ (токены вставлены) ---
 TELEGRAM_TOKEN = "8011928165:AAGMEjyJ93CLwI0g9zaxkjFnhu6L5Vly4Eo"
 GIGACHAT_AUTH = "MDE5ZDQwYjktYzczNC03YmIzLTg2OTItNWQyODZiZThkMWE5OjI5OWE5MzdmLThkZGQtNDdmMS1iY2RjLTdiYjcwODgzZTJlNA=="
-
-# Ссылка на файл с инструкцией на GitHub (RAW)
-INSTRUCTION_URL = "https://raw.githubusercontent.com/dkytfjs8bh-star/pc-builder/main/instruction.txt"
 
 # Подключаемся к GigaChat
 giga = GigaChat(
@@ -32,6 +28,68 @@ storage = MemoryStorage()
 dp = Dispatcher(storage=storage)
 
 logging.basicConfig(level=logging.INFO)
+
+# --- ВСТРОЕННАЯ ИНСТРУКЦИЯ ---
+INSTRUCTION_TEXT = """📖 **КАК СОБРАТЬ КОМПЬЮТЕР САМОСТОЯТЕЛЬНО**
+
+🔧 **ПОДГОТОВКА**
+• Купите все компоненты согласно сборке
+• Подготовьте стол, хорошее освещение
+• Заземлитесь (прикоснитесь к батарее)
+• Подготовьте крестовую отвертку
+
+🔩 **УСТАНОВКА ПРОЦЕССОРА**
+1. Откройте защелку на материнской плате
+2. Вставьте процессор (ориентир — золотой треугольник)
+3. Закройте защелку
+
+🔩 **УСТАНОВКА ОЗУ**
+1. Откройте защелки на слотах
+2. Вставьте планки до щелчка (слоты 2 и 4)
+
+🔩 **УСТАНОВКА КУЛЕРА**
+1. Нанесите термопасту (если не нанесена)
+2. Закрепите кулер на плате
+3. Подключите к CPU_FAN
+
+🔩 **МАТЕРИНСКАЯ ПЛАТА В КОРПУС**
+1. Вкрутите стойки в корпус
+2. Закрепите плату винтами
+
+🔩 **БЛОК ПИТАНИЯ**
+1. Закрепите БП в корпусе
+2. Проложите кабели через заднюю стенку
+
+🔩 **УСТАНОВКА SSD**
+• M.2 SSD: вставьте под углом, закрепите винтом
+• SATA SSD: закрепите, подключите кабель и питание
+
+🔩 **ВИДЕОКАРТА**
+1. Выломайте заглушки на корпусе (2 шт)
+2. Откройте защелку на PCI-E слоте
+3. Вставьте карту до щелчка
+4. Закрепите винтами
+5. Подключите питание (6 или 8 pin)
+
+🔩 **ПОДКЛЮЧЕНИЕ ПРОВОДОВ**
+• 24 pin — питание материнской платы
+• 4/8 pin — питание процессора
+• Передняя панель: Power SW, Reset SW, HDD LED, Power LED
+• USB 3.0, USB 2.0, аудио
+
+🔩 **КАБЕЛЬ-МЕНЕДЖМЕНТ**
+• Соберите провода сзади
+• Затяните стяжками
+
+💻 **ПЕРВЫЙ ЗАПУСК**
+1. Включите БП тумблером (I)
+2. Нажмите кнопку включения
+3. Установите Windows с флешки
+4. Установите драйвера
+
+⚠️ **Если не включается:** проверьте БП, кнопку Power SW, кабели питания
+
+💡 **Совет:** при неуверенности — обратитесь в сервисный центр (2000-3000₽)"""
 
 # --- СОСТОЯНИЯ FSM ---
 class BuildSteps(StatesGroup):
@@ -106,18 +164,6 @@ def get_confirm_keyboard():
 def get_back_to_main():
     buttons = [[InlineKeyboardButton(text="🏠 ГЛАВНОЕ МЕНЮ", callback_data="main_menu")]]
     return InlineKeyboardMarkup(inline_keyboard=buttons)
-
-# --- ФУНКЦИЯ ПОЛУЧЕНИЯ ИНСТРУКЦИИ С GITHUB ---
-async def get_instruction_from_github() -> str:
-    """Скачивает инструкцию с GitHub"""
-    try:
-        response = requests.get(INSTRUCTION_URL, timeout=10)
-        if response.status_code == 200:
-            return response.text
-        else:
-            return "❌ Не удалось загрузить инструкцию. Попробуйте позже."
-    except Exception as e:
-        return f"❌ Ошибка загрузки: {e}"
 
 # --- FALLBACK СБОРКИ (на случай ошибки GigaChat) ---
 def get_fallback_build(data: dict) -> str:
@@ -398,13 +444,9 @@ async def quick(callback: CallbackQuery, state: FSMContext):
 
 @dp.callback_query(F.data == "instruction")
 async def instruction(callback: CallbackQuery):
-    """Отправляет инструкцию из файла на GitHub"""
-    await callback.message.answer("📖 *Загружаю инструкцию...*", parse_mode="Markdown")
-    
-    instruction_text = await get_instruction_from_github()
-    
+    """Отправляет встроенную инструкцию"""
     await callback.message.answer(
-        instruction_text,
+        INSTRUCTION_TEXT,
         reply_markup=get_back_to_main(),
         parse_mode="Markdown"
     )
