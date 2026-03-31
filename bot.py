@@ -97,6 +97,38 @@ INSTRUCTION = """
 💡 Совет: посмотри видео "сборка ПК" на YouTube
 """
 
+# --- ФУНКЦИЯ ИЗВЛЕЧЕНИЯ БЮДЖЕТА (ПОДДЕРЖИВАЕТ 80к, 80 тыс, 80000) ---
+def extract_budget(text: str) -> int:
+    """Извлекает бюджет из текста. Понимает: 80к, 80 тыс, 80000, 80 000"""
+    text = text.lower().replace(' ', '').replace(',', '')
+    
+    # Паттерн: число + к / тыс / тысяч / руб
+    patterns = [
+        (r'(\d+)к', 1000),           # 80к
+        (r'(\d+)тыс', 1000),         # 80тыс
+        (r'(\d+)тысяч', 1000),       # 80тысяч
+        (r'(\d+)руб', 1),            # 80000руб
+        (r'(\d+)₽', 1),              # 80000₽
+        (r'(\d{4,6})', 1),           # 80000
+    ]
+    
+    for pattern, multiplier in patterns:
+        match = re.search(pattern, text)
+        if match:
+            amount = int(match.group(1))
+            result = amount * multiplier
+            if 20000 <= result <= 500000:
+                return result
+    
+    # Если нашли просто число без букв
+    numbers = re.findall(r'\d+', text)
+    for num in numbers:
+        n = int(num)
+        if 20000 <= n <= 500000:
+            return n
+    
+    return None
+
 # --- ГОТОВЫЕ СБОРКИ ---
 def get_build_by_budget(budget: int, purpose: str = "games") -> str:
     if purpose == "games":
@@ -126,7 +158,7 @@ def get_build_by_budget(budget: int, purpose: str = "games") -> str:
 
 💰 ИТОГО: 72 000 ₽"""
         
-        else:
+        elif budget <= 200000:
             return """🎮 **ИГРОВОЙ ПК (100-200 000 ₽)**
 
 🔹 Процессор: Intel i7-13700K — 35 000 ₽
@@ -138,6 +170,19 @@ def get_build_by_budget(budget: int, purpose: str = "games") -> str:
 🔹 Корпус: NZXT H7 Flow — 8 000 ₽
 
 💰 ИТОГО: 180 000 ₽"""
+        
+        else:
+            return """🎮 **ИГРОВОЙ ПК (от 200 000 ₽)**
+
+🔹 Процессор: Intel i9-14900K — 55 000 ₽
+🔹 Видеокарта: RTX 4080 Super — 120 000 ₽
+🔹 Материнская плата: Z790 — 25 000 ₽
+🔹 Оперативная память: 64GB DDR5 — 20 000 ₽
+🔹 SSD: 4TB NVMe — 25 000 ₽
+🔹 Блок питания: 1000W Platinum — 18 000 ₽
+🔹 Корпус: Lian Li O11 — 12 000 ₽
+
+💰 ИТОГО: 275 000 ₽"""
     
     else:
         return """💻 **УНИВЕРСАЛЬНЫЙ ПК**
@@ -211,7 +256,7 @@ async def start(message: Message, state: FSMContext):
     await message.answer(
         "🖥️ *PC BUILDER БОТ*\n\n"
         "🔹 ПОШАГОВАЯ СБОРКА\n"
-        "🔹 БЫСТРАЯ СБОРКА\n"
+        "🔹 БЫСТРАЯ СБОРКА — напиши например: игровой пк 80к\n"
         "🔹 ПРОВЕРКА СОВМЕСТИМОСТИ\n"
         "🔹 ИНСТРУКЦИЯ\n\n"
         "Выбери:",
@@ -228,8 +273,16 @@ async def step_start(callback: CallbackQuery, state: FSMContext):
 @dp.callback_query(F.data == "quick_build")
 async def quick_start(callback: CallbackQuery, state: FSMContext):
     await callback.message.answer(
-        "Напиши: игровой пк 100000\n"
-        "или: пк для монтажа 150000"
+        "🚀 *БЫСТРАЯ СБОРКА*\n\n"
+        "Напиши в одном сообщении:\n"
+        "• тип ПК (игровой/рабочий/монтаж)\n"
+        "• бюджет\n\n"
+        "Примеры:\n"
+        "• игровой пк 80к\n"
+        "• пк для монтажа 120 тыс\n"
+        "• рабочий пк 50000\n\n"
+        "Или просто укажи бюджет:",
+        parse_mode="Markdown"
     )
     await state.set_state(BuildSteps.waiting_for_quick)
     await callback.answer()
@@ -237,8 +290,10 @@ async def quick_start(callback: CallbackQuery, state: FSMContext):
 @dp.callback_query(F.data == "check_compatibility")
 async def compatibility_start(callback: CallbackQuery, state: FSMContext):
     await callback.message.answer(
+        "🔍 *ПРОВЕРКА СОВМЕСТИМОСТИ*\n\n"
         "Напиши связку процессор + видеокарта\n\n"
-        "Пример: Intel i5-12400F и RTX 3060"
+        "Пример: Intel i5-12400F и RTX 3060",
+        parse_mode="Markdown"
     )
     await state.set_state(BuildSteps.waiting_for_compatibility)
     await callback.answer()
@@ -278,25 +333,32 @@ async def main_menu(callback: CallbackQuery, state: FSMContext):
 @dp.message(BuildSteps.waiting_for_quick)
 async def handle_quick(message: Message, state: FSMContext):
     text = message.text.lower()
-    numbers = re.findall(r'\d+', text)
-    budget = None
-    for n in numbers:
-        if 20000 <= int(n) <= 500000:
-            budget = int(n)
-            break
+    
+    # Извлекаем бюджет
+    budget = extract_budget(text)
     
     if not budget:
-        await message.answer("❌ Не нашел бюджет. Пример: игровой пк 100000")
+        await message.answer(
+            "❌ Не нашел бюджет.\n\n"
+            "Напиши в формате:\n"
+            "• игровой пк 80к\n"
+            "• пк для монтажа 120 тыс\n"
+            "• 50000\n\n"
+            "Пример: игровой пк 100к"
+        )
         return
     
-    if "игр" in text:
+    # Определяем тип ПК
+    if "игр" in text or "game" in text:
         purpose = "games"
-    elif "монтаж" in text or "видео" in text:
+    elif "монтаж" in text or "видео" in text or "3d" in text:
         purpose = "creative"
+    elif "работ" in text or "офис" in text:
+        purpose = "work"
     else:
         purpose = "games"
     
-    msg = await message.answer(f"🤔 Собираю под {budget} ₽...")
+    msg = await message.answer(f"🤔 Собираю {purpose} ПК под {budget} ₽...")
     build = await generate_build(purpose, budget)
     await msg.delete()
     await message.answer(build, reply_markup=get_back_to_main())
@@ -320,7 +382,8 @@ async def handle_compatibility(message: Message, state: FSMContext):
     await state.clear()
 
 async def main():
-    print("🤖 БОТ ЗАПУЩЕН! Есть проверка совместимости")
+    print("🤖 PC BUILDER БОТ ЗАПУЩЕН!")
+    print("✅ Понимает форматы: 80к, 80 тыс, 80000")
     await dp.start_polling(bot)
 
 if __name__ == "__main__":
