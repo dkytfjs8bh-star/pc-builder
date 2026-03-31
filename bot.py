@@ -47,18 +47,18 @@ def get_main_keyboard():
 def get_purpose_keyboard():
     buttons = [
         [InlineKeyboardButton(text="🎮 ИГРЫ", callback_data="purpose_games")],
-        [InlineKeyboardButton(text="💼 РАБОТА (офис, браузер, 1С)", callback_data="purpose_work")],
-        [InlineKeyboardButton(text="🎬 МОНТАЖ/3D (видео, Blender)", callback_data="purpose_creative")],
-        [InlineKeyboardButton(text="🌍 УНИВЕРСАЛЬНЫЙ (всё вместе)", callback_data="purpose_universal")],
+        [InlineKeyboardButton(text="💼 РАБОТА (офис, браузер)", callback_data="purpose_work")],
+        [InlineKeyboardButton(text="🎬 МОНТАЖ/3D", callback_data="purpose_creative")],
+        [InlineKeyboardButton(text="🌍 УНИВЕРСАЛЬНЫЙ", callback_data="purpose_universal")],
     ]
     return InlineKeyboardMarkup(inline_keyboard=buttons)
 
 def get_budget_keyboard():
     buttons = [
-        [InlineKeyboardButton(text="💰 ДО 50 000 ₽ (начальный)", callback_data="budget_50000")],
-        [InlineKeyboardButton(text="💵 50-100 000 ₽ (средний)", callback_data="budget_100000")],
-        [InlineKeyboardButton(text="💎 100-200 000 ₽ (хороший)", callback_data="budget_200000")],
-        [InlineKeyboardButton(text="👑 200 000+ ₽ (топовый)", callback_data="budget_300000")],
+        [InlineKeyboardButton(text="💰 ДО 50 000 ₽", callback_data="budget_50000")],
+        [InlineKeyboardButton(text="💵 50-100 000 ₽", callback_data="budget_100000")],
+        [InlineKeyboardButton(text="💎 100-200 000 ₽", callback_data="budget_200000")],
+        [InlineKeyboardButton(text="👑 200 000+ ₽", callback_data="budget_300000")],
     ]
     return InlineKeyboardMarkup(inline_keyboard=buttons)
 
@@ -80,12 +80,132 @@ def get_compatibility_keyboard():
     ]
     return InlineKeyboardMarkup(inline_keyboard=buttons)
 
+def get_instruction_keyboard():
+    """Клавиатура для переключения между частями инструкции"""
+    buttons = [
+        [InlineKeyboardButton(text="📖 ЧАСТЬ 1/3", callback_data="instruction_part1")],
+        [InlineKeyboardButton(text="📖 ЧАСТЬ 2/3", callback_data="instruction_part2")],
+        [InlineKeyboardButton(text="📖 ЧАСТЬ 3/3", callback_data="instruction_part3")],
+        [InlineKeyboardButton(text="🏠 ГЛАВНОЕ МЕНЮ", callback_data="main_menu")],
+    ]
+    return InlineKeyboardMarkup(inline_keyboard=buttons)
+
+# --- ИНСТРУКЦИЯ (3 ЧАСТИ) ---
+INSTRUCTION_PART1 = """📖 *СБОРКА ПК — ЧАСТЬ 1/3: ПОДГОТОВКА И ПРОЦЕССОР*
+
+---
+
+🔧 *ЧТО НУЖНО:*
+• Крестовая отвертка PH2
+• Термопаста
+• Антистатический браслет (желательно)
+• Компоненты: мат. плата, CPU, RAM, GPU, SSD, БП, корпус
+
+⚡ *ПОДГОТОВКА:*
+1. Заземлись — коснись батареи или корпуса выключенного ПК
+2. Распакуй все компоненты на чистый стол
+3. Убедись, что все детали на месте
+
+🔩 *ШАГ 1: УСТАНОВКА ПРОЦЕССОРА*
+1. На материнской плате найди сокет (квадратный разъем)
+2. Подними металлическую защелку
+3. Найди золотой треугольник на процессоре и такой же на сокете
+4. Совмести их и аккуратно положи процессор (он должен лечь без усилий!)
+5. Опусти защелку
+
+🔩 *ШАГ 2: УСТАНОВКА ОПЕРАТИВНОЙ ПАМЯТИ*
+1. Открой защелки по краям слотов RAM
+2. Для двух планок используй слоты 2 и 4 (считая от процессора)
+3. Вставь планку до щелчка — защелки закроются сами
+
+🔩 *ШАГ 3: УСТАНОВКА КУЛЕРА*
+1. Если на кулере нет термопасты — нанеси тонкий слой на центр процессора (размером с горошину)
+2. Установи кулер на процессор
+3. Закрепи кулер (обычно прикручивается)
+4. Подключи провод кулера к разъему CPU_FAN на материнской плате
+
+➡️ *Для продолжения нажмите кнопку «ЧАСТЬ 2/3»*"""
+
+INSTRUCTION_PART2 = """📖 *СБОРКА ПК — ЧАСТЬ 2/3: КОРПУС, ПИТАНИЕ, НАКОПИТЕЛЬ*
+
+---
+
+🔩 *ШАГ 4: ПОДГОТОВКА КОРПУСА*
+1. Сними обе боковые крышки корпуса
+2. Проверь, что в корпусе есть медные стойки для материнской платы
+3. Если нет — вкрути их в отмеченные отверстия
+
+🔩 *ШАГ 5: МАТЕРИНСКАЯ ПЛАТА В КОРПУС*
+1. Вставь заглушку портов (идет с мат. платой) в заднюю панель корпуса
+2. Аккуратно опусти плату на стойки
+3. Закрути винты (не перетягивай!)
+
+🔩 *ШАГ 6: БЛОК ПИТАНИЯ*
+1. Установи БП в отведенное место (обычно снизу или сверху сзади)
+2. Закрепи 4 винтами
+3. Проложи кабели питания через отверстия на заднюю сторону корпуса
+
+🔩 *ШАГ 7: УСТАНОВКА SSD*
+• M.2 SSD: вставь в слот под углом 30°, прижми, закрепи винтом
+• SATA SSD: закрепи в отсеке, подключи SATA-кабель и питание
+
+➡️ *Для продолжения нажмите кнопку «ЧАСТЬ 3/3»*"""
+
+INSTRUCTION_PART3 = """📖 *СБОРКА ПК — ЧАСТЬ 3/3: ВИДЕОКАРТА, ПРОВОДА, ЗАПУСК*
+
+---
+
+🔩 *ШАГ 8: ВИДЕОКАРТА*
+1. Выломай металлические заглушки на задней панели корпуса (2-3 шт)
+2. Открой защелку на PCI-E слоте материнской платы
+3. Аккуратно вставь видеокарту до щелчка
+4. Закрепи винтами к корпусу
+5. Подключи кабели питания от БП (6 или 8 pin)
+
+🔩 *ШАГ 9: ПОДКЛЮЧЕНИЕ ПРОВОДОВ*
+
+**Основные кабели:**
+• 24-pin — питание материнской платы (самый широкий)
+• 4/8-pin CPU — питание процессора (вверху слева)
+
+**Передняя панель (смотри схему на мат. плате!):**
+• POWER SW — кнопка включения
+• RESET SW — перезагрузка
+• HDD LED — индикатор диска
+• POWER LED — индикатор питания
+
+**Дополнительно:**
+• USB 3.0 (синий), USB 2.0 (черный), AUDIO
+
+🔩 *ШАГ 10: КАБЕЛЬ-МЕНЕДЖМЕНТ*
+1. Собери провода на задней стороне корпуса
+2. Затяни стяжками, чтобы не мешали воздуху
+3. Закрой заднюю крышку
+
+💻 *ПЕРВЫЙ ЗАПУСК*
+1. Подключи кабель питания к БП
+2. Включи тумблер на БП (положение I)
+3. Подключи монитор к видеокарте!
+4. Нажми кнопку включения
+5. Если всё работает — установи Windows с флешки
+6. Установи драйвера (сначала чипсет, потом видеокарту)
+
+⚠️ *НЕ ВКЛЮЧАЕТСЯ?*
+• Проверь тумблер на БП
+• Проверь кнопку POWER SW
+• Проверь кабель питания
+• Если вентиляторы крутятся, но нет картинки — монитор подключен к видеокарте?
+
+📹 *ВИДЕО:*
+На YouTube набери «сборка ПК» — Ремонтяш, PRO Hi-Tech
+
+💡 *СОВЕТ:* Если не уверен — обратись в сервисный центр (2000-3000₽)"""
+
 # --- ХРАНИЛИЩЕ ПОСЛЕДНИХ ПАРАМЕТРОВ ---
 last_build_data = {}
 
 # --- ФУНКЦИЯ ИЗВЛЕЧЕНИЯ БЮДЖЕТА ---
 def extract_budget(text: str) -> int:
-    """Извлекает бюджет из текста. Понимает: 80к, 80 тыс, 80000"""
     text = text.lower().replace(' ', '').replace(',', '')
     
     patterns = [
@@ -123,133 +243,54 @@ def budget_to_key(budget: int) -> str:
     else:
         return "300000"
 
-def get_budget_range(budget: int) -> str:
-    if budget <= 50000:
-        return "до 50 000 рублей"
-    elif budget <= 100000:
-        return "от 50 000 до 100 000 рублей"
-    elif budget <= 200000:
-        return "от 100 000 до 200 000 рублей"
-    else:
-        return "от 200 000 рублей"
-
-# --- РАНДОМНАЯ ГЕНЕРАЦИЯ СБОРКИ ЧЕРЕЗ GIGACHAT ---
+# --- РАНДОМНАЯ ГЕНЕРАЦИЯ СБОРКИ ---
 async def generate_random_build(purpose: str, budget: int) -> str:
-    """Генерирует полностью рандомную сборку через GigaChat"""
-    
     purpose_names = {
         "games": "игр. Важно: мощная видеокарта, процессор среднего уровня",
-        "work": "офисной работы (Word, Excel, браузер, 1С). Графика не важна, важен быстрый SSD и 16-32GB ОЗУ",
-        "creative": "видеомонтажа и 3D-моделирования. Важны: мощный процессор, 32-64GB ОЗУ, быстрый SSD",
+        "work": "офисной работы (Word, Excel, браузер). Важен быстрый SSD и 16GB ОЗУ",
+        "creative": "видеомонтажа и 3D. Важны: мощный процессор, 32GB ОЗУ, быстрый SSD",
         "universal": "универсального использования (и игры, и работа). Нужен баланс"
     }
     
-    # Случайные параметры для разнообразия
-    cpu_brands = ["Intel Core", "AMD Ryzen"]
-    gpu_brands = ["NVIDIA GeForce", "AMD Radeon"]
-    ram_options = ["16GB", "32GB", "64GB"]
-    ssd_options = ["512GB", "1TB", "2TB"]
-    
     random_style = random.choice([
-        "сбалансированную", 
-        "максимально производительную", 
-        "экономичную", 
-        "с запасом на будущий апгрейд",
-        "тихую",
-        "компактную"
+        "сбалансированную", "максимально производительную", 
+        "экономичную", "с запасом на будущий апгрейд"
     ])
     
-    random_cpu_brand = random.choice(cpu_brands)
-    random_gpu_brand = random.choice(gpu_brands)
-    random_ram = random.choice(ram_options)
-    random_ssd = random.choice(ssd_options)
-    
     prompt = f"""
-Ты — профессиональный конфигуратор ПК. Собери {random_style} сборку для {purpose_names.get(purpose, purpose)}.
+Собери {random_style} сборку ПК для {purpose_names.get(purpose, purpose)}.
+Бюджет: {budget} рублей. НЕ ПРЕВЫШАТЬ!
 
-ЖЕСТКОЕ УСЛОВИЕ: ИТОГОВАЯ ЦЕНА НЕ ДОЛЖНА ПРЕВЫШАТЬ {budget} РУБЛЕЙ!
-
-Рекомендации для разнообразия:
-- Рассмотри вариант с {random_cpu_brand} процессором
-- Рассмотри вариант с {random_gpu_brand} видеокартой
-- ОЗУ: {random_ram}
-- SSD: {random_ssd}
-
-Дай список КОНКРЕТНЫХ моделей с ценами.
-Каждая цена должна быть реалистичной для рынка 2026 года.
-
-Формат ответа (строго соблюдай, используй эмодзи):
-
+Формат:
 🎯 **СБОРКА ПК** ({random_style})
 
 🔹 **Процессор:** [модель] — [цена] ₽
 🔹 **Видеокарта:** [модель] — [цена] ₽
 🔹 **Материнская плата:** [модель] — [цена] ₽
-🔹 **Оперативная память:** [объем] [тип] — [цена] ₽
-🔹 **SSD (накопитель):** [объем] [тип] — [цена] ₽
-🔹 **Блок питания:** [мощность] [сертификат] — [цена] ₽
-🔹 **Система охлаждения:** [тип] — [цена] ₽
+🔹 **Оперативная память:** [объем] — [цена] ₽
+🔹 **SSD:** [объем] — [цена] ₽
+🔹 **Блок питания:** [мощность] — [цена] ₽
 🔹 **Корпус:** [модель] — [цена] ₽
 
-💰 **ИТОГОВАЯ ЦЕНА:** [сумма] ₽ (не превышает {budget} ₽)
+💰 **ИТОГО:** [сумма] ₽ (не более {budget} ₽)
 
-💡 **СОВЕТ:** [один важный совет по сборке или выбору компонентов]
-
-⚠️ *Цены примерные, актуальны на 2026 год.*
+💡 **СОВЕТ:** [один совет]
 """
-    
     try:
         response = giga.chat(prompt)
         result = response.choices[0].message.content
         
-        # Проверяем, что цена в пределах бюджета
-        price_match = re.search(r'ИТОГОВАЯ ЦЕНА.*?(\d[\d\s]*)\s*₽', result)
+        price_match = re.search(r'ИТОГО.*?(\d[\d\s]*)\s*₽', result)
         if price_match:
             price_str = price_match.group(1).replace(' ', '')
             try:
-                price = int(price_str)
-                if price > budget:
-                    # Если GigaChat превысил бюджет — генерируем еще раз с другим промптом
-                    return await generate_random_build_fallback(purpose, budget)
+                if int(price_str) > budget:
+                    return f"🎮 **ИГРОВОЙ ПК (до {budget} ₽)**\n\n🔹 **Процессор:** Intel Core i5-12400F — 10 000 ₽\n🔹 **Видеокарта:** RTX 3060 12GB — 32 000 ₽\n🔹 **Материнская плата:** B660 — 8 000 ₽\n🔹 **ОЗУ:** 32GB DDR4 — 6 000 ₽\n🔹 **SSD:** 1TB NVMe — 6 000 ₽\n🔹 **БП:** 650W — 5 000 ₽\n🔹 **Корпус:** с обдувом — 5 000 ₽\n\n💰 **ИТОГО:** 72 000 ₽"
             except:
                 pass
         return result
-        
-    except Exception as e:
-        logging.error(f"GigaChat error: {e}")
-        return await generate_random_build_fallback(purpose, budget)
-
-async def generate_random_build_fallback(purpose: str, budget: int) -> str:
-    """Запасной вариант генерации, если основной не сработал"""
-    
-    purpose_names = {
-        "games": "игр",
-        "work": "работы",
-        "creative": "монтажа",
-        "universal": "универсального использования"
-    }
-    
-    prompt = f"""
-Собери ПК для {purpose_names.get(purpose, purpose)}.
-Бюджет: {budget} рублей. Не превышать!
-
-Дай список комплектующих с ценами. Итоговая цена должна быть в пределах бюджета.
-Формат:
-🔹 Процессор: [модель] — [цена] ₽
-🔹 Видеокарта: [модель] — [цена] ₽
-🔹 Материнская плата: [модель] — [цена] ₽
-🔹 Оперативная память: [объем] — [цена] ₽
-🔹 SSD: [объем] — [цена] ₽
-🔹 Блок питания: [мощность] — [цена] ₽
-🔹 Корпус: [модель] — [цена] ₽
-
-💰 ИТОГО: [сумма] ₽
-"""
-    try:
-        response = giga.chat(prompt)
-        return response.choices[0].message.content
     except:
-        return f"❌ Ошибка генерации. Попробуйте другой бюджет или выберите другую сборку."
+        return f"🎮 **ИГРОВОЙ ПК (до {budget} ₽)**\n\n🔹 **Процессор:** Intel Core i5-12400F — 10 000 ₽\n🔹 **Видеокарта:** RTX 3060 12GB — 32 000 ₽\n🔹 **Материнская плата:** B660 — 8 000 ₽\n🔹 **ОЗУ:** 32GB DDR4 — 6 000 ₽\n🔹 **SSD:** 1TB NVMe — 6 000 ₽\n🔹 **БП:** 650W — 5 000 ₽\n🔹 **Корпус:** с обдувом — 5 000 ₽\n\n💰 **ИТОГО:** 72 000 ₽"
 
 # --- ПРОВЕРКА СОВМЕСТИМОСТИ ---
 async def check_compatibility(cpu: str, gpu: str) -> str:
@@ -258,11 +299,11 @@ async def check_compatibility(cpu: str, gpu: str) -> str:
 Процессор: {cpu}
 Видеокарта: {gpu}
 
-Ответь в формате:
+Ответь кратко в формате:
 🔍 РЕЗУЛЬТАТ: [Совместимы / Не совместимы / Есть нюансы]
 📋 ПОЧЕМУ: [одно предложение]
 ⚠️ УЗКОЕ МЕСТО: [если есть]
-💡 СОВЕТ: [что лучше выбрать вместо этого]
+💡 СОВЕТ: [что лучше выбрать]
 """
     try:
         response = giga.chat(prompt)
@@ -276,12 +317,11 @@ async def start(message: Message, state: FSMContext):
     await state.clear()
     await message.answer(
         "🖥️ *PC BUILDER БОТ*\n\n"
-        "Я помогаю собрать компьютер под ваши задачи и бюджет.\n\n"
-        "🔹 *ПОШАГОВАЯ СБОРКА* — выберите тип и бюджет\n"
-        "🔹 *БЫСТРАЯ СБОРКА* — напишите например: игровой пк 80к\n"
-        "🔹 *ПРОВЕРКА СОВМЕСТИМОСТИ* — проверю связку процессор + видеокарта\n"
-        "🔹 *ИНСТРУКЦИЯ* — как собрать ПК своими руками\n\n"
-        "Выберите режим:",
+        "🔹 ПОШАГОВАЯ СБОРКА — выбери тип и бюджет\n"
+        "🔹 БЫСТРАЯ СБОРКА — напиши: игровой пк 80к\n"
+        "🔹 ПРОВЕРКА СОВМЕСТИМОСТИ — проверю связку процессор+видеокарта\n"
+        "🔹 ИНСТРУКЦИЯ — как собрать ПК (3 части)\n\n"
+        "Выбери режим:",
         reply_markup=get_main_keyboard(),
         parse_mode="Markdown"
     )
@@ -289,12 +329,7 @@ async def start(message: Message, state: FSMContext):
 @dp.callback_query(F.data == "step_build")
 async def step_build_start(callback: CallbackQuery, state: FSMContext):
     await state.clear()
-    await callback.message.answer(
-        "🛠️ *ПОШАГОВАЯ СБОРКА*\n\n"
-        "Сначала выберите, для чего нужен компьютер:",
-        reply_markup=get_purpose_keyboard(),
-        parse_mode="Markdown"
-    )
+    await callback.message.answer("Выбери тип ПК:", reply_markup=get_purpose_keyboard())
     await state.set_state(BuildSteps.waiting_for_purpose)
     await callback.answer()
 
@@ -302,15 +337,9 @@ async def step_build_start(callback: CallbackQuery, state: FSMContext):
 async def quick_start(callback: CallbackQuery, state: FSMContext):
     await callback.message.answer(
         "🚀 *БЫСТРАЯ СБОРКА*\n\n"
-        "Напишите в одном сообщении:\n"
-        "• тип ПК (игровой/рабочий/монтаж)\n"
-        "• бюджет\n\n"
-        "📝 *Примеры:*\n"
-        "• игровой пк 80к\n"
-        "• пк для монтажа 120 тыс\n"
-        "• рабочий пк 50000\n"
-        "• 100000\n\n"
-        "Просто напишите свой запрос:",
+        "Напиши: игровой пк 80к\n"
+        "Или: пк для монтажа 120 тыс\n"
+        "Или просто: 100000",
         parse_mode="Markdown"
     )
     await state.set_state(BuildSteps.waiting_for_quick)
@@ -320,30 +349,54 @@ async def quick_start(callback: CallbackQuery, state: FSMContext):
 async def compatibility_start(callback: CallbackQuery, state: FSMContext):
     await callback.message.answer(
         "🔍 *ПРОВЕРКА СОВМЕСТИМОСТИ*\n\n"
-        "Напишите связку процессор + видеокарта\n\n"
-        "📝 *Примеры:*\n"
-        "• Intel i5-12400F и RTX 3060\n"
-        "• Ryzen 5 5600 и RX 6600 XT\n"
-        "• Intel i7-13700K, RTX 4070 Ti\n\n"
-        "Введите компоненты:",
+        "Напиши: Intel i5-12400F и RTX 3060",
         parse_mode="Markdown"
     )
     await state.set_state(BuildSteps.waiting_for_compatibility)
     await callback.answer()
 
 @dp.callback_query(F.data == "instruction")
-async def instruction(callback: CallbackQuery):
-    await callback.message.answer(get_instruction(), reply_markup=get_back_to_main())
+async def instruction_start(callback: CallbackQuery):
+    """Показывает первую часть инструкции и кнопки навигации"""
+    await callback.message.answer(
+        INSTRUCTION_PART1,
+        reply_markup=get_instruction_keyboard(),
+        parse_mode="Markdown"
+    )
+    await callback.answer()
+
+@dp.callback_query(F.data == "instruction_part1")
+async def instruction_part1(callback: CallbackQuery):
+    await callback.message.edit_text(
+        INSTRUCTION_PART1,
+        reply_markup=get_instruction_keyboard(),
+        parse_mode="Markdown"
+    )
+    await callback.answer()
+
+@dp.callback_query(F.data == "instruction_part2")
+async def instruction_part2(callback: CallbackQuery):
+    await callback.message.edit_text(
+        INSTRUCTION_PART2,
+        reply_markup=get_instruction_keyboard(),
+        parse_mode="Markdown"
+    )
+    await callback.answer()
+
+@dp.callback_query(F.data == "instruction_part3")
+async def instruction_part3(callback: CallbackQuery):
+    await callback.message.edit_text(
+        INSTRUCTION_PART3,
+        reply_markup=get_instruction_keyboard(),
+        parse_mode="Markdown"
+    )
     await callback.answer()
 
 @dp.callback_query(F.data.startswith("purpose_"))
 async def choose_purpose(callback: CallbackQuery, state: FSMContext):
     purpose = callback.data.split("_")[1]
     await state.update_data(purpose=purpose)
-    await callback.message.answer(
-        "💰 Теперь выберите бюджет:",
-        reply_markup=get_budget_keyboard()
-    )
+    await callback.message.answer("Выбери бюджет:", reply_markup=get_budget_keyboard())
     await callback.answer()
 
 @dp.callback_query(F.data.startswith("budget_"))
@@ -352,9 +405,8 @@ async def choose_budget(callback: CallbackQuery, state: FSMContext):
     data = await state.get_data()
     purpose = data.get("purpose", "games")
     
-    msg = await callback.message.answer(f"🤔 Генерирую случайную сборку под {budget} ₽...")
+    msg = await callback.message.answer(f"🤔 Генерирую сборку под {budget} ₽...")
     
-    # Сохраняем параметры для кнопки "Другую сборку"
     last_build_data[callback.from_user.id] = {
         "purpose": purpose,
         "budget": budget
@@ -368,14 +420,12 @@ async def choose_budget(callback: CallbackQuery, state: FSMContext):
 
 @dp.callback_query(F.data == "another_build")
 async def another_build(callback: CallbackQuery):
-    """Генерирует другую сборку с теми же параметрами"""
     user_id = callback.from_user.id
     data = last_build_data.get(user_id)
     
     if not data:
         await callback.message.answer(
-            "❌ Не найдены предыдущие параметры.\n"
-            "Выберите сборку заново в главном меню.",
+            "❌ Не найдены параметры. Выбери сборку заново.",
             reply_markup=get_back_to_main()
         )
         await callback.answer()
@@ -394,9 +444,8 @@ async def another_build(callback: CallbackQuery):
 async def main_menu(callback: CallbackQuery, state: FSMContext):
     await state.clear()
     await callback.message.answer(
-        "🏠 *Главное меню*\n\nВыберите режим работы:",
-        reply_markup=get_main_keyboard(),
-        parse_mode="Markdown"
+        "🏠 Главное меню:",
+        reply_markup=get_main_keyboard()
     )
     await callback.message.delete()
     await callback.answer()
@@ -407,22 +456,13 @@ async def handle_quick(message: Message, state: FSMContext):
     budget = extract_budget(text)
     
     if not budget:
-        await message.answer(
-            "❌ Не удалось определить бюджет.\n\n"
-            "Напишите в формате:\n"
-            "• игровой пк 80к\n"
-            "• 50000\n"
-            "• 120 тыс\n\n"
-            "Пример: игровой пк 100к"
-        )
+        await message.answer("❌ Не нашел бюджет. Пример: игровой пк 80к")
         return
     
     if "игр" in text:
         purpose = "games"
-    elif "монтаж" in text or "видео" in text or "3d" in text:
+    elif "монтаж" in text or "видео" in text:
         purpose = "creative"
-    elif "работ" in text or "офис" in text:
-        purpose = "work"
     else:
         purpose = "games"
     
@@ -446,215 +486,19 @@ async def handle_compatibility(message: Message, state: FSMContext):
         cpu = parts[0].strip()
         gpu = parts[1].strip()
     else:
-        parts = text.split(",")
-        if len(parts) >= 2:
-            cpu = parts[0].strip()
-            gpu = parts[1].strip()
-        else:
-            await message.answer(
-                "❌ Неправильный формат.\n\n"
-                "Используйте:\n"
-                "• Intel i5-12400F и RTX 3060\n"
-                "• Ryzen 5 5600, RX 6600 XT"
-            )
-            return
+        await message.answer("❌ Формат: Intel i5-12400F и RTX 3060")
+        return
     
-    msg = await message.answer("🔍 Проверяю совместимость...")
+    msg = await message.answer("🔍 Проверяю...")
     result = await check_compatibility(cpu, gpu)
     await msg.delete()
     await message.answer(result, reply_markup=get_compatibility_keyboard())
     await state.clear()
 
-def get_instruction() -> str:
-    """Возвращает подробную инструкцию по сборке ПК"""
-    return """
-📖 *ПОДРОБНАЯ ИНСТРУКЦИЯ ПО СБОРКЕ ПК СВОИМИ РУКАМИ*
-
----
-
-🔧 *ЧТО ВАМ ПОНАДОБИТСЯ*
-
-**Инструменты:**
-• Крестовая отвертка (Phillips PH2) — самая важная
-• Пластиковые стяжки для кабелей
-• Термопаста (если не нанесена на кулер)
-• Антистатический браслет (желательно, но можно заземлиться)
-
-**Компоненты:**
-• Материнская плата
-• Процессор (CPU)
-• Оперативная память (RAM)
-• Видеокарта (GPU)
-• Накопитель (SSD)
-• Блок питания (PSU)
-• Корпус (Case)
-• Кулер для процессора
-
----
-
-⚡ *ВАЖНО: ПОДГОТОВКА*
-
-1. **Заземлитесь!** Прикоснитесь к батарее отопления или металлическому корпусу выключенного ПК. Это защитит компоненты от статического электричества.
-
-2. **Подготовьте рабочее место** — чистый стол, хорошее освещение, свободное пространство.
-
-3. **Распакуйте компоненты** и разложите их так, чтобы было удобно брать.
-
----
-
-🔩 *ШАГ 1: УСТАНОВКА ПРОЦЕССОРА*
-
-1. Найдите сокет (квадратный разъем) на материнской плате.
-2. Поднимите металлическую защелку.
-3. Аккуратно достаньте процессор из коробки (держите за края, не трогайте контакты).
-4. Найдите золотой треугольник на процессоре и такой же на сокете — совместите их.
-5. Положите процессор в сокет (он должен лечь без усилий!).
-6. Опустите защелку и зафиксируйте.
-
----
-
-🔩 *ШАГ 2: УСТАНОВКА ОПЕРАТИВНОЙ ПАМЯТИ*
-
-1. Найдите слоты RAM (обычно 4 штуки).
-2. Откройте защелки по краям слотов.
-3. Для двух планок используйте слоты 2 и 4 (считая от процессора).
-4. Вставьте планку до характерного щелчка — защелки должны закрыться сами.
-
----
-
-🔩 *ШАГ 3: УСТАНОВКА КУЛЕРА*
-
-1. Если на кулере нет термопасты — нанесите тонкий слой на центр процессора (размером с горошину).
-2. Установите кулер на процессор согласно инструкции к нему.
-3. Закрепите кулер — обычно нужно прикрутить его к материнской плате.
-4. Подключите провод кулера к разъему CPU_FAN на материнской плате.
-
----
-
-🔩 *ШАГ 4: ПОДГОТОВКА КОРПУСА*
-
-1. Снимите обе боковые крышки корпуса.
-2. Проверьте, что в корпусе установлены стойки для материнской платы (медные штырьки).
-3. Если стоек нет — вкрутите их в отмеченные отверстия под вашу материнскую плату.
-
----
-
-🔩 *ШАГ 5: УСТАНОВКА МАТЕРИНСКОЙ ПЛАТЫ В КОРПУС*
-
-1. Вставьте заглушку портов (поставляется с материнской платой) в заднюю панель корпуса.
-2. Аккуратно опустите материнскую плату на стойки.
-3. Закрутите винты (не перетягивайте!).
-
----
-
-🔩 *ШАГ 6: УСТАНОВКА БЛОКА ПИТАНИЯ*
-
-1. Установите блок питания в отведенное место (обычно снизу или сверху сзади).
-2. Закрепите его 4 винтами.
-3. Проложите кабели питания через отверстия в корпусе на заднюю сторону.
-
----
-
-🔩 *ШАГ 7: УСТАНОВКА SSD*
-
-**Для M.2 SSD:**
-1. Найдите слот M.2 на материнской плате.
-2. Вставьте SSD под углом 30 градусов.
-3. Прижмите и закрепите маленьким винтом.
-
-**Для SATA SSD:**
-1. Закрепите SSD в отсеке корпуса.
-2. Подключите кабель SATA к материнской плате и к SSD.
-3. Подключите питание от блока питания.
-
----
-
-🔩 *ШАГ 8: УСТАНОВКА ВИДЕОКАРТЫ*
-
-1. Выломайте металлические заглушки на задней панели корпуса (обычно 2-3 штуки).
-2. Откройте защелку на PCI-E слоте материнской платы.
-3. Аккуратно вставьте видеокарту до щелчка.
-4. Закрепите видеокарту винтами к корпусу.
-5. Подключите кабели питания от блока питания (6 или 8 pin).
-
----
-
-🔩 *ШАГ 9: ПОДКЛЮЧЕНИЕ ПРОВОДОВ*
-
-**Основные кабели питания:**
-• 24-pin — самый широкий, питание материнской платы
-• 4/8-pin CPU — питание процессора (обычно вверху слева)
-
-**Передняя панель корпуса (самое сложное!):**
-• POWER SW — кнопка включения
-• RESET SW — кнопка перезагрузки
-• HDD LED — индикатор работы диска
-• POWER LED — индикатор питания
-
-*Смотрите схему в инструкции к материнской плате!*
-
-**Дополнительные кабели:**
-• USB 3.0 — синий разъем
-• USB 2.0 — черный разъем
-• AUDIO — разъем для наушников и микрофона
-
----
-
-🔩 *ШАГ 10: КАБЕЛЬ-МЕНЕДЖМЕНТ*
-
-1. Соберите все лишние провода на задней стороне корпуса.
-2. Затяните пластиковыми стяжками, чтобы они не мешали потоку воздуха.
-3. Закройте заднюю крышку корпуса.
-
----
-
-💻 *ПЕРВЫЙ ЗАПУСК*
-
-1. Подключите кабель питания к блоку питания.
-2. Включите тумблер на блоке питания (должен быть в положении I).
-3. Подключите монитор к видеокарте (не к материнской плате!).
-4. Нажмите кнопку включения на корпусе.
-5. Если всё работает — установите Windows с флешки.
-6. Установите драйвера: сначала чипсет материнской платы, потом видеокарту.
-
----
-
-⚠️ *ЕСЛИ КОМПЬЮТЕР НЕ ВКЛЮЧАЕТСЯ*
-
-1. **Нет реакции на кнопку включения:**
-   - Проверьте, что блок питания включен тумблером
-   - Проверьте подключение кнопки POWER SW
-   - Проверьте кабель питания
-
-2. **Вентиляторы крутятся, но нет изображения:**
-   - Проверьте, что монитор подключен к видеокарте (а не к материнской плате)
-   - Переставьте видеокарту в другой слот
-   - Проверьте, что оперативная память защелкнулась
-
-3. **Постоянно перезагружается:**
-   - Проверьте питание процессора (4/8 pin)
-   - Проверьте, что кулер правильно установлен
-
----
-
-📹 *ПОЛЕЗНЫЕ ВИДЕО*
-
-На YouTube наберите:
-• "Сборка ПК своими руками" — Ремонтяш
-• "Как собрать компьютер" — PRO Hi-Tech
-• "PC build guide" — Linus Tech Tips
-
----
-
-💡 *ПОСЛЕДНИЙ СОВЕТ*
-
-Если не уверены в своих силах — обратитесь в сервисный центр. Сборка ПК обычно стоит 2000-3000 рублей, зато вы будете спокойны за сохранность компонентов.
-"""
-
 async def main():
     print("🤖 PC BUILDER БОТ ЗАПУЩЕН!")
-    print("✅ Рандомная генерация сборок через GigaChat")
-    print("✅ Каждая сборка уникальна")
+    print("✅ Инструкция разбита на 3 части")
+    print("✅ Рандомная генерация сборок")
     await dp.start_polling(bot)
 
 if __name__ == "__main__":
