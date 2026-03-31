@@ -1,9 +1,2 @@
 aiogram
 gigachat
-requests
-aiohttp
-aiohttp-socks
-certifi
-charset-normalizer
-idna
-urllib3
